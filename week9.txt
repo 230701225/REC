@@ -1,0 +1,158 @@
+#weather
+
+import React, { useEffect } from 'react';
+
+const WeatherCard = ({ city, onToggle, addLog }) => {
+  useEffect(() => {
+    addLog(`WeatherCard Mounted: ${city.name}`);
+  }, [addLog, city.name]);
+
+  return (
+    <div style={{ border: '1px solid gray', padding: '10px', margin: '10px 0' }}>
+      <h3>{city.name}</h3>
+      <p>{city.temp}°C</p>
+      <span>{city.condition}</span>
+      <div>
+        <span style={{ marginRight: '10px' }}>Condition Badge: {city.condition}</span>
+      </div>
+      <button onClick={() => onToggle(city.id)}>Remove City</button>
+    </div>
+  );
+};
+
+export default WeatherCard;
+
+
+
+
+
+
+
+
+
+
+
+
+#app
+
+
+import React, { useEffect, useState } from 'react';
+import CityFilter from './components/CityFilter';
+import WeatherCard from './components/WeatherCard';
+
+const App = () => {
+  const [cities, setCities] = useState([
+    { id: 1, name: 'New York', temp: 30, condition: 'Sunny', active: true },
+    { id: 2, name: 'London', temp: 18, condition: 'Cloudy', active: true },
+    { id: 3, name: 'Tokyo', temp: 22, condition: 'Rainy', active: true },
+    { id: 4, name: 'Paris', temp: 15, condition: 'Snowy', active: true },
+  ]);
+  const [logs, setLogs] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [renderCount, setRenderCount] = useState(0);
+
+  useEffect(() => {
+    addLog('App Mounted');
+  }, []);
+
+  const addLog = (message) => {
+    setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} - ${message}`]);
+  };
+
+  const handleFilterChange = (value) => {
+    setFilter(value);
+    addLog(`Filter changed to: ${value}`);
+  };
+
+  const handleToggleCity = (id) => {
+    setCities((prev) => prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c)));
+    addLog(`Toggled city visibility: ${id}`);
+  };
+
+  const clearLogs = () => {
+    setLogs(['Logs cleared']);
+  };
+
+  useEffect(() => {
+    setRenderCount((count) => count + 1);
+  });
+
+  const filteredCities =
+    filter === 'all'
+      ? cities.filter((c) => c.active)
+      : cities.filter((c) => c.condition === filter && c.active);
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>Weather Dashboard</h1>
+
+      <CityFilter
+        currentFilter={filter}
+        onFilterChange={handleFilterChange}
+        addLog={addLog}
+        renderCount={renderCount}
+      />
+
+      <h2>Cities</h2>
+      {filteredCities.map((city) => (
+        <WeatherCard key={city.id} city={city} onToggle={handleToggleCity} addLog={addLog} />
+      ))}
+
+      <h2>Lifecycle Logs</h2>
+      <button onClick={clearLogs}>Clear Log</button>
+      <ul>
+        {logs.length === 0 ? (
+          <li>No logs yet</li>
+        ) : (
+          logs.map((log, index) => <li key={index}>{log}</li>)
+        )}
+      </ul>
+    </div>
+  );
+};
+
+export default App;
+
+
+
+
+
+#city
+
+
+import React, { useEffect } from 'react';
+
+const CityFilter = ({ currentFilter, onFilterChange, addLog, renderCount }) => {
+  useEffect(() => {
+    addLog('CityFilter Mounted');
+  }, [addLog]);
+
+  const handleChange = (e) => {
+    onFilterChange(e.target.value);
+  };
+
+  return (
+    <div>
+      <label htmlFor="filter">Filter by Condition</label>
+      <select
+        id="filter"
+        role="combobox"
+        value={currentFilter}
+        onChange={handleChange}
+        style={{ marginLeft: '10px' }}
+      >
+        <option value="all">All Conditions</option>
+        <option value="Sunny">Sunny</option>
+        <option value="Cloudy">Cloudy</option>
+        <option value="Rainy">Rainy</option>
+        <option value="Snowy">Snowy</option>
+      </select>
+      <div>Render Count: {renderCount}</div>
+    </div>
+  );
+};
+
+export default CityFilter;
+
+
+
